@@ -1,54 +1,43 @@
-import express, { json } from "express"
-import config from 'config'
-import sequelize from "./db/sequelize"
-import profileRouter from "./routers/profile"
-import followsRouter from "./routers/follows"
-import commentsRouter from "./routers/comments"
-import feedRouter from "./routers/feed"
-import authRouter from "./routers/auth"
-import errorLogger from "./middlewares/error/error-logger"
-import errorResponder from "./middlewares/error/error-responder"
-import notFound from "./middlewares/not-found"
-import enforceAuth from "./middlewares/enforce-auth"
-import cors from 'cors'
-import fileUpload from "express-fileupload"
+import express, { json } from "express";
+import config from "config";
+import sequelize from "./db/sequelize";
+import companiesRouter from "./routers/companies";
+import serversRouter from "./routers/servers";
+import errorLogger from "./middlewares/error/error-logger";
+import errorResponder from "./middlewares/error/error-responder";
+import notFound from "./middlewares/not-found";
+import cors from "cors";
+import fileUpload from "express-fileupload";
 
-const port = config.get<string>('app.port')
-const name = config.get<string>('app.name')
-const force = config.get<boolean>('sequelize.sync.force')
+const port = config.get<string>("app.port");
+const name = config.get<string>("app.name");
+const force = config.get<boolean>("sequelize.sync.force");
 
 const app = express();
 
 (async () => {
-    await sequelize.sync({ force })
+  await sequelize.sync({ force });
 
-    // middlewares
-    app.use(cors()) // allow any client to use this server
+  // Middlewares
+  app.use(cors()); // allow any client to use this server
+  app.use(json()); // middleware to extract the post/put/patch data in JSON format
+  app.use(fileUpload()); // middleware to handle file uploads
 
-    // allow cors from a single specific client:
-    // app.use(cors({
-    //     origin: 'http://localhost:5173'
-    // }))
+  // Routers
+  app.use("/api/companies", companiesRouter);
+  app.use("/api/servers", serversRouter);
 
-    // allow cors from a list of clients:
-    // app.use(cors({
-    //     origin: ['http://localhost:5173', 'https://google.com']
-    // }))
-    app.use(json()) // a middleware to extract the post/put/patch data and save it to the request object in case the content type of the request is application/json
-    app.use(fileUpload())
+  // Special notFound middleware
+  app.use(notFound);
 
-    app.use('/auth', authRouter)
-    app.use('/profile', profileRouter)
-    app.use('/follows', followsRouter)
-    app.use('/comments', commentsRouter)
-    app.use('/feed', feedRouter)
+  // Error middleware
+  app.use(errorLogger);
+  app.use(errorResponder);
 
-    // special notFound middleware
-    app.use(notFound)
+  // app.listen(3000, () => {
+  //   console.log("Server is running on port 3000...");
+  // });
 
-    // error middleware
-    app.use(errorLogger)
-    app.use(errorResponder)
-
-    app.listen(port, () => console.log(`${name} started on port ${port}...`))
-})()
+  // Start the server
+  app.listen(port, () => console.log(`${name} started on port ${port}...`));
+})();

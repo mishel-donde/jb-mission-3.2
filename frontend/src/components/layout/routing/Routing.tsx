@@ -1,18 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Profile from "../../posts/profile/Profile";
-import Feed from "../../posts/feed/Feed";
 import NotFound from "../not-found/NotFound";
-import EditPost from "../../posts/edit/EditPost";
+import List from "../../pages/list/List";
+import ServerStatus from "../../pages/list/List";
 
 export default function Routing(): JSX.Element {
-    return (
-        <Routes>
-            <Route path="/" element={<Navigate to="/profile"/>} />
-            {/* <Route path="/" element={<Profile />} /> */}
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/feed" element={<Feed />} />
-            <Route path="/edit/:id/" element={<EditPost />} />
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    )   
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/servers/list" />} />
+      <Route path="/servers/list" element={<List />} />
+      <Route path="/servers/status/:serverId" element={<ServerStatus />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
